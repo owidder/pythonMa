@@ -4,6 +4,7 @@ import pandas as pd
 #%% read data
 ma_data = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/adjustet_data.dta")
 ltv_average = pd.read_excel("/Users/oliverwidder/PycharmProjects/ma/data/ltv.xlsx")
+fertig = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/fertig_iMaPP_Q_euroarea_2005.dta")
 
 #%% merge data
 ltv_average_small = ltv_average[["iso3", "Year", "Month", "LTV_average"]]

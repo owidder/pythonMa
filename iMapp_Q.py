@@ -2,39 +2,35 @@
 import pandas as pd
 import numpy as np
 
-def compute_quarter_mean(df, i, iso3_col, data_col, month_col):
-    if((df.iloc[i][month_col]%3==0) & (df.iloc[i-1][iso3_col]==df.iloc[i][iso3_col]) & (df.iloc[i-2][iso3_col]==df.iloc[i][iso3_col])).any():
+def compute_quarter_mean(df, i, iso3_col, data_col, month_col, year_col):
+    i_0 = df.iloc[i]
+    i_1 = df.iloc[i-1]
+    i_2 = df.iloc[i-2]
+    if((i_0[month_col]%3==0) & (i_1[iso3_col]==i_0[iso3_col]) & (i_2[iso3_col]==i_0[iso3_col])):
+        mean = (df.iloc[i][data_col] + df.iloc[i-1][data_col] + df.iloc[i-2][data_col]) / 3
+        print(f'q-mean: {i_0[iso3_col]}/{i_0[year_col]}/{i_0[month_col]}: ({i_0[data_col]} + {i_1[data_col]} + {i_2[data_col]})/3 = {mean}')
         return (df.iloc[i][data_col] + df.iloc[i-1][data_col] + df.iloc[i-2][data_col]) / 3
     else:
         return float("NaN")
 
-def create_quarterly(df, data_col, month_col, q_col, iso3_col):
-    df[q_col] = [compute_quarter_mean(df, i, iso3_col, data_col, month_col) for i in range(len(df.index))]
+def create_quarterly(df, data_col, month_col, q_col, iso3_col, year_col):
+    df[q_col] = [compute_quarter_mean(df, i, iso3_col, data_col, month_col, year_col) for i in range(len(df.index))]
 
 def compute_yoy(df, i, iso3_col, data_col, quarter_col, year_col):
     i_4 = df.iloc[i-4]
     i_0 = df.iloc[i]
     if((i_4[iso3_col]==i_0[iso3_col]) & (i_4[quarter_col]==i_0[quarter_col]) & (i_4[year_col]==(i_0[year_col]-1))):
-        return (i_0[data_col]-i_4[data_col])/i_4[data_col]
-    else:
-        return float("NaN")
-
-def compute_growth_2(df, iso3_col, data_col, quarter_col, year_col, growth_col):
-    df[growth_col] = [compute_yoy(df, i, iso3_col, data_col, quarter_col) for i in range(len(df.index))]
-
-def compute_growth(df, column, year, month, iso3):
-    if((df["Year"]==year-1) & (df["Month"]==month) & (df["iso3"]==iso3)).any():
-        last_year = df[(df["Year"]==year-1) & (df["Month"]==month) & (df["iso3"]==iso3)][column]
-        this_year = df[(df["Year"]==year) & (df["Month"]==month) & (df["iso3"]==iso3)][column]
-        print(f'{iso3}:{year}-{month} -> {last_year.values[0]} - {this_year.values[0]} -> {(this_year.values[0] - last_year.values[0]) / last_year.values[0]}')
-        yoy = (this_year.values[0] - last_year.values[0]) / last_year.values[0]
-        if(abs(yoy) == np.inf):
-            print(f'inf: {iso3}:{year}-{month}')
+        growth = (i_0[data_col]-i_4[data_col])/i_4[data_col]
+        print(f'yoy: {i_0[iso3_col]}/{i_0[year_col]}/{i_0[quarter_col]}: ({i_0[data_col]} - {i_4[data_col]}) / {i_4[data_col]} = {growth}')
+        if(abs(growth) == np.inf):
             return float("NaN")
         else:
-            return yoy
+            return growth
     else:
         return float("NaN")
+
+def compute_growth(df, iso3_col, data_col, quarter_col, year_col, growth_col):
+    df[growth_col] = [compute_yoy(df, i, iso3_col, data_col, quarter_col, year_col) for i in range(len(df.index))]
 
 #%% iMapp
 iMapp_Q = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMaPP_Q.dta")
@@ -49,7 +45,7 @@ money = pd.read_csv("/Users/oliverwidder/PycharmProjects/ma/data/18-04-21 04_05_
 money.rename(columns={"Code": "iso3"}, inplace=True)
 money = money[money["Household credit billion currency units"].notna()]
 
-create_quarterly(money, "Household credit billion currency units", "Month", "credit_Q", "iso3")
+create_quarterly(money, "Household credit billion currency units", "Month", "credit_Q", "iso3", "Year")
 money["Quarter"] = [(money.iloc[i]["Month"]/3 if money.iloc[i]["Month"]%3==0 else float("NaN")) for i in range(len(money.index))]
 money.dropna(inplace=True)
 money = money.astype({"Quarter": int})
@@ -68,10 +64,7 @@ iMapp_Q_money_gdp = pd.merge(iMapp_Q_money, gdp, on=["iso3", "Year", "Month"])
 del iMapp_Q_money
 
 #%% credit_yoy
-iMapp_Q_money_gdp["credit_yoy"] = [
-    compute_growth(iMapp_Q_money_gdp, "credit_Q", iMapp_Q_money_gdp.iloc[i]["Year"], iMapp_Q_money_gdp.iloc[i]["Month"], iMapp_Q_money_gdp.iloc[i]["iso3"])
-    for i in range(len(iMapp_Q_money_gdp.index))
-]
+compute_growth(iMapp_Q_money_gdp, "iso3", "credit_Q", "Quarter", "Year", "credit_yoy")
 
 iMapp_Q_money_gdp.dropna(inplace=True)
 del iMapp_Q_money_gdp["Month"]

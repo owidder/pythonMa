@@ -6,6 +6,8 @@ import numpy as np
 ma_ltv_2005_q = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/adjustet_data_ltv_average_2005q.dta")
 fertig = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/fertig_iMaPP_Q_all.dta")
 fertig_euro = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/fertig_iMaPP_Q_euroarea_2005.dta")
+iMapp_Q = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMaPP_Q.dta")
+iMapp_Q_credit_gdp = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMapp_Q_credit_gdp.dta")
 
 #%% describe
 ma_ltv_2005_q['Capital_HH'].astype(float).describe()

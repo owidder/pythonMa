@@ -8,6 +8,7 @@ fertig = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/fertig_iMaPP
 fertig_euro = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/fertig_iMaPP_Q_euroarea_2005.dta")
 iMapp_Q = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMaPP_Q.dta")
 iMapp_Q_credit_gdp = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMapp_Q_credit_gdp.dta")
+iMapp_Q_credit_gdp_4qmean = pd.read_stata("/Users/oliverwidder/PycharmProjects/ma/data/iMapp_Q_credit_gdp_4qmean.dta")
 
 #%% describe
 ma_ltv_2005_q['Capital_HH'].astype(float).describe()
